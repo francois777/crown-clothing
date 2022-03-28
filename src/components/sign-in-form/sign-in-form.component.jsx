@@ -4,13 +4,8 @@ import { SignUpContainer, StyledH2, ButtonsContainer } from './sign-in-form.styl
 import FormInput from '../form-input/form-input.component';
 import Button, { BUTTON_TYPE_CLASSES } from '../button/button.component';
 
-// The UserContext return the value that was specified by the
-// value parameter from UserContext
-import { UserContext } from '../../contexts/user.context'
-
 import {
   signInWithGooglePopup,
-  createUserDocument,
   signInAuthUserWithEmailAndPassword,
 } from '../../utils/firebase/firebase.utils';
 
@@ -35,10 +30,7 @@ const SignInForm = () => {
     event.preventDefault();
 
     try {
-      const {user} = await signInAuthUserWithEmailAndPassword(
-        email,
-        password
-      );
+      await signInAuthUserWithEmailAndPassword(email, password)
       resetFormFields()
     } catch (error) {
       switch (error.code) {
@@ -59,8 +51,6 @@ const SignInForm = () => {
 
     setFormFields({ ...formFields, [name]: value });
   };
-
-  console.log("[SignInForm], about to render")
 
   return (
     <SignUpContainer>
