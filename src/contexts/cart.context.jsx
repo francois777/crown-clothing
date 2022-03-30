@@ -1,14 +1,6 @@
 import { createContext, useState, useReducer } from 'react'
 import { createAction } from '../utils/reducer/reducer.utils'
 
-{/* Introducing reducers into the cartContext
-    (1) Reducers must replace the useState- and useEffect- hooks
-    (2) Reducers should not contain business logic, but concern itself
-        with the State of the cart context.
-    (3) A good time for using reducers is when one update needs to
-        modify multiple readible values in your state
-*/}
-
 const addCartItem = (cartItems, stockItem) => {
   // find if cartItems contains productToAdd
   const foundItem = cartItems.find(cartItem =>
