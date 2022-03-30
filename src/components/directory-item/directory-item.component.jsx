@@ -12,8 +12,6 @@ const DirectoryItem = ({ category }) => {
 
   const onNavigateHandler = () => navigate(route);
 
-  console.log("[DirectoryItem], about to render..");
-
   return (
     <DirectoryItemContainer onClick={onNavigateHandler}>
       <BackgroundImage imageUrl={imageUrl} />

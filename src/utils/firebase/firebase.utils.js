@@ -33,28 +33,33 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 
 // The following parameters are required by Google
-const provider = new GoogleAuthProvider()
-provider.setCustomParameters({
+const googleProvider = new GoogleAuthProvider()
+googleProvider.setCustomParameters({
   prompt: "select_account"
 })
 
 export const auth = getAuth()
-export const signInWithGooglePopup = () => signInWithPopup(auth, provider)
-export const signInWithGoogleRedirect = () => signInWithRedirect(auth, provider)
+export const signInWithGooglePopup = () => signInWithPopup(auth, googleProvider)
+export const signInWithGoogleRedirect = () => signInWithRedirect(auth, googleProvider)
 
 export const db = getFirestore()
 
-export const addCollectionAndDocuments = async (collectionKey, documents) => {
-  const collectionRef = collection(db, collectionKey)
-  const batch = writeBatch(db)
+export const addCollectionAndDocuments = async (
+  collectionKey,
+  objectsToAdd,
+  field
+) => {
+  const collectionRef = collection(db, collectionKey);
+  const batch = writeBatch(db);
 
-  documents.forEach((object) => {
-    const docRef = doc(collectionRef, object.title.toLowerCase())
-    batch.set(docRef, object)
-  })
-  await batch.commit()
+  objectsToAdd.forEach((object) => {
+    const docRef = doc(collectionRef, object.title.toLowerCase());
+    batch.set(docRef, object);
+  });
+
+  await batch.commit();
   console.log("[firebase], addCollectionAndDocuments, batch committed")
-}
+};
 
 export const getCategoriesAndDocuments = async () => {
   const collectionRef = collection(db, 'categories')
@@ -75,7 +80,7 @@ export const createUserDocument = async(
   additionalInformation = {}
 ) => {
   if (!userAuth) return;
-  console.log('firebase.utils.js, userAuth: ', userAuth,
+  console.log('[firebase.utils.js], userAuth: ', userAuth,
               '; additionalInformation: ', additionalInformation)
 
   const userDocRef = doc(db, 'users', userAuth.uid)
@@ -85,6 +90,8 @@ export const createUserDocument = async(
   // if user document does not exist, create it.
   if(!userSnapshot.exists()) {
     const { displayName, email } = userAuth
+    console.log('No userSnapshot, displayName: ', displayName);
+
     const createdAt = new Date()
 
     try {
