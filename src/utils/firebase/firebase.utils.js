@@ -65,13 +65,14 @@ export const getCategoriesAndDocuments = async () => {
   const collectionRef = collection(db, 'categories')
   const q = query(collectionRef)
   const querySnapshot = await getDocs(q);
-  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
-    const { title, items } = docSnapshot.data()
-    acc[title.toLowerCase()] = items
-    return acc
-  }, {})
-
-  return categoryMap
+  // const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+  //   const { title, items } = docSnapshot.data()
+  //   acc[title.toLowerCase()] = items
+  //   return acc
+  // }, {})
+  //
+  // return categoryMap
+  return querySnapshot.docs.map(docSnapshot => docSnapshot.data())
 }
 
 // Create a document and return a document reference
@@ -91,8 +92,8 @@ export const createUserDocument = async(
   if(!userSnapshot.exists()) {
     const { displayName, email } = userAuth
     console.log('No userSnapshot, displayName: ', displayName);
-
     const createdAt = new Date()
+    console.log("[firebase.utils], no user snapshop, displayName = ", displayName);
 
     try {
       await setDoc(userDocRef, {
