@@ -3,7 +3,6 @@ import ProductCard from '../product-card/product-card.component'
 import { CategoryPreviewContainer, Title, Preview } from './category-preview.styles'
 
 const CategoryPreview = ({ title, products }) => {
-
   return (
     <CategoryPreviewContainer>
       <h2>

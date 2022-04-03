@@ -5,22 +5,25 @@ import { persistStore, persistReducer } from 'redux-persist'
 
 // We use `storage` to access local storage
 import storage from 'redux-persist/lib/storage'
+
+import thunk from 'redux-thunk'
 import { rootReducer } from './root-reducer'
 
 // We can either blacklist or whitelist some reducer values
 const persistConfig = {
   key: 'root',
   storage,
-  blacklist: ['user']
+  whitelist: ['cart']
 }
 const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 // Middlewares are library helpers that happen before an action hits the reducer
 // So, when you dispatch an action, it hits the middlewares first
 // NB: Only perform logging in Development; not Production
-const middleWares = [process.env.NODE_ENV !== 'production' && logger].filter(
-  Boolean
-);
+const middleWares = [
+  process.env.NODE_ENV !== 'production' && logger,
+  thunk
+].filter(Boolean);
 
 const composedEnhancer = (
   process.env.NODE_ENV !== 'production'
