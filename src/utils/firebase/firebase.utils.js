@@ -76,14 +76,11 @@ export const getCategoriesAndDocuments = async () => {
 }
 
 // Create a document and return a document reference
-export const createUserDocument = async(
+export const createUserDocumentFromAuth = async(
   userAuth,
   additionalInformation = {}
 ) => {
   if (!userAuth) return;
-  console.log('[firebase.utils.js], userAuth: ', userAuth,
-              '; additionalInformation: ', additionalInformation)
-
   const userDocRef = doc(db, 'users', userAuth.uid)
   const userSnapshot = await getDoc(userDocRef)
 
@@ -91,9 +88,7 @@ export const createUserDocument = async(
   // if user document does not exist, create it.
   if(!userSnapshot.exists()) {
     const { displayName, email } = userAuth
-    console.log('No userSnapshot, displayName: ', displayName);
     const createdAt = new Date()
-    console.log("[firebase.utils], no user snapshop, displayName = ", displayName);
 
     try {
       await setDoc(userDocRef, {
@@ -106,7 +101,7 @@ export const createUserDocument = async(
         console.log('error creating the user', error.message)
     }
   }
-  return userDocRef
+  return userSnapshot
 }
 
 export const createAuthUserWithEmailAndPassword = async (email, password) => {
@@ -129,4 +124,20 @@ export const onAuthStateChangedListener = (callback) =>
 
 // Other available parameters are:
 // onAuthStateChanged(auth, callback, errorCallback, completedCallback)
-//
+
+// Converting to Saga implies converting from an observable listener to a
+// promised-based function call.
+// Since this is a promise, we don't want this listener to stay active. We
+// want to unsubscribe the moment we get a value.
+export const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (userAuth) => {
+        unsubscribe()
+        resolve(userAuth)
+      },
+      reject
+    )
+  })
+}

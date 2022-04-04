@@ -6,7 +6,11 @@ import { persistStore, persistReducer } from 'redux-persist'
 // We use `storage` to access local storage
 import storage from 'redux-persist/lib/storage'
 
-import thunk from 'redux-thunk'
+// Replace Thunks by Sagas
+//import thunk from 'redux-thunk'
+import createSagaMiddleware from 'redux-saga'
+import { rootSaga } from './root-saga'
+
 import { rootReducer } from './root-reducer'
 
 // We can either blacklist or whitelist some reducer values
@@ -15,6 +19,7 @@ const persistConfig = {
   storage,
   whitelist: ['cart']
 }
+const sagaMiddleware = createSagaMiddleware()
 const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 // Middlewares are library helpers that happen before an action hits the reducer
@@ -22,7 +27,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer)
 // NB: Only perform logging in Development; not Production
 const middleWares = [
   process.env.NODE_ENV !== 'production' && logger,
-  thunk
+  sagaMiddleware
 ].filter(Boolean);
 
 const composedEnhancer = (
@@ -32,5 +37,11 @@ const composedEnhancer = (
 
 const composedEnhancers = composedEnhancer(applyMiddleware(...middleWares))
 
-export const store = createStore(persistedReducer, undefined, composedEnhancers)
+export const store = createStore(
+  persistedReducer,
+  undefined,
+  composedEnhancers
+)
+sagaMiddleware.run(rootSaga)
+
 export const persistor = persistStore(store)
