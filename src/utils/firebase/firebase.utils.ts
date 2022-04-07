@@ -6,7 +6,10 @@ import {  getAuth,
           createUserWithEmailAndPassword,
           signInWithEmailAndPassword,
           signOut,
-          onAuthStateChanged
+          onAuthStateChanged,
+          User,
+          NextOrObserver,
+          UserCredential
 } from 'firebase/auth'
 import {
   getFirestore,
@@ -16,7 +19,8 @@ import {
   collection,
   writeBatch,
   query,
-  getDocs
+  getDocs,
+  QueryDocumentSnapshot
 } from 'firebase/firestore'
 
 const firebaseConfig = {
@@ -44,11 +48,14 @@ export const signInWithGoogleRedirect = () => signInWithRedirect(auth, googlePro
 
 export const db = getFirestore()
 
-export const addCollectionAndDocuments = async (
-  collectionKey,
-  objectsToAdd,
-  field
-) => {
+type ObjectToAdd = {
+  title: string;
+};
+
+export const addCollectionAndDocuments = async <T extends ObjectToAdd>(
+  collectionKey: string,
+  objectsToAdd: T[],
+): Promise<void> => {
   const collectionRef = collection(db, collectionKey);
   const batch = writeBatch(db);
 
@@ -61,25 +68,42 @@ export const addCollectionAndDocuments = async (
   console.log("[firebase], addCollectionAndDocuments, batch committed")
 };
 
+type CategoryItem = {
+  id: number;
+  imageUrl: string;
+  name: string;
+  price: number;
+};
+
+type CategoryData = {
+  imageUrl: string;
+  items: CategoryItem[];
+  title: string;
+};
+
 export const getCategoriesAndDocuments = async () => {
   const collectionRef = collection(db, 'categories')
   const q = query(collectionRef)
   const querySnapshot = await getDocs(q);
-  // const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
-  //   const { title, items } = docSnapshot.data()
-  //   acc[title.toLowerCase()] = items
-  //   return acc
-  // }, {})
-  //
-  // return categoryMap
-  return querySnapshot.docs.map(docSnapshot => docSnapshot.data())
+  return querySnapshot.docs.map(
+    docSnapshot => docSnapshot.data() as CategoryData)
 }
+
+export type AdditionalInformation = {
+  displayName?: string;
+};
+
+export type UserData = {
+  createdAt: Date;
+  displayName: string;
+  email: string;
+};
 
 // Create a document and return a document reference
 export const createUserDocumentFromAuth = async(
-  userAuth,
-  additionalInformation = {}
-) => {
+  userAuth: User,
+  additionalInformation: AdditionalInformation = {} as AdditionalInformation
+): Promise<QueryDocumentSnapshot<UserData> | void> => {
   if (!userAuth) return;
   const userDocRef = doc(db, 'users', userAuth.uid)
   const userSnapshot = await getDoc(userDocRef)
@@ -98,28 +122,34 @@ export const createUserDocumentFromAuth = async(
         ...additionalInformation
       })
     } catch (error) {
-        console.log('error creating the user', error.message)
+        console.log('error creating the user', error)
     }
   }
-  return userSnapshot
+  return userSnapshot as QueryDocumentSnapshot<UserData>;
 }
 
-export const createAuthUserWithEmailAndPassword = async (email, password) => {
+export const createAuthUserWithEmailAndPassword = async (
+  email: string,
+  password: string
+): Promise<UserCredential | void> => {
   if(!email || !password) return;
   return await createUserWithEmailAndPassword(auth, email, password)
 }
 
-export const signInAuthUserWithEmailAndPassword = async (email, password) => {
+export const signInAuthUserWithEmailAndPassword = async (
+  email: string,
+  password: string
+): Promise<UserCredential | void> => {
   if (!email || !password) return;
 
   return await signInWithEmailAndPassword(auth, email, password);
 };
 
-export const signOutUser = async () => await signOut(auth)
+export const signOutUser = async (): Promise<void> => await signOut(auth)
 
 // onAuthStateChanged is an open listener which is invoked whenever
 // a user is authenticated or signs out.
-export const onAuthStateChangedListener = (callback) =>
+export const onAuthStateChangedListener = (callback: NextOrObserver<User>) =>
   onAuthStateChanged(auth, callback)
 
 // Other available parameters are:
@@ -129,7 +159,7 @@ export const onAuthStateChangedListener = (callback) =>
 // promised-based function call.
 // Since this is a promise, we don't want this listener to stay active. We
 // want to unsubscribe the moment we get a value.
-export const getCurrentUser = () => {
+export const getCurrentUser = (): Promise<User | null> => {
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(
       auth,
