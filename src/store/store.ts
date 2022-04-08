@@ -1,6 +1,6 @@
-import { compose, createStore, applyMiddleware } from 'redux'
+import { compose, createStore, applyMiddleware, Middleware } from 'redux'
 import logger from 'redux-logger'
-import { persistStore, persistReducer } from 'redux-persist'
+import { persistStore, persistReducer, PersistConfig } from 'redux-persist'
 // import { loggerMiddleware } from './middleware/logger'
 
 // We use `storage` to access local storage
@@ -13,8 +13,20 @@ import { rootSaga } from './root-saga'
 
 import { rootReducer } from './root-reducer'
 
+export type RootState = ReturnType<typeof rootReducer>
+
+declare global {
+  interface Window {
+    __REDUX_DEVTOOL_EXTENSION_COMPOSE__?: typeof compose
+  }
+}
+
+type ExtendedPersistConfig = PersistConfig<RootState> & {
+  whitelist: (keyof RootState)[]
+}
+
 // We can either blacklist or whitelist some reducer values
-const persistConfig = {
+const persistConfig: ExtendedPersistConfig = {
   key: 'root',
   storage,
   whitelist: ['cart']
@@ -28,7 +40,7 @@ const persistedReducer = persistReducer(persistConfig, rootReducer)
 const middleWares = [
   process.env.NODE_ENV !== 'production' && logger,
   sagaMiddleware
-].filter(Boolean);
+].filter((middleware): middleware is Middleware => Boolean(middleware));
 
 const composedEnhancer = (
   process.env.NODE_ENV !== 'production'
