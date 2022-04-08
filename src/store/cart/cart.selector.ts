@@ -1,9 +1,10 @@
 import { createSelector } from 'reselect'
+import { RootState } from '../store'
 // reselect is a library for creating memoized "selector" functions
 
 import { CartState } from './cart.reducer'
 
-const selectCartReducer = (state): CartState => state.cart;
+const selectCartReducer = (state: RootState): CartState => state.cart;
 
 export const selectIsCartOpen = createSelector(
   [selectCartReducer],

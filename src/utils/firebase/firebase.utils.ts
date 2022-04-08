@@ -81,12 +81,13 @@ type CategoryData = {
   title: string;
 };
 
-export const getCategoriesAndDocuments = async () => {
+export const getCategoriesAndDocuments = async (): Promise<CategoryData[]> => {
   const collectionRef = collection(db, 'categories')
   const q = query(collectionRef)
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(
-    docSnapshot => docSnapshot.data() as CategoryData)
+    (docSnapshot) => docSnapshot.data() as CategoryData
+  )
 }
 
 export type AdditionalInformation = {
