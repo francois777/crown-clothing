@@ -8,8 +8,14 @@ import Spinner from '../../components/spinner/spinner.component'
 import ProductCard from '../../components/product-card/product-card.component'
 import { CategoryContainer, TitleContainer } from './category.styles'
 
+type CategoryRouteParams = {
+  category: string
+}
+
 const Category = () => {
-  const { category } = useParams()
+  const { category } = useParams<
+    keyof CategoryRouteParams
+  >() as CategoryRouteParams
 
   // A state defined in CategoriesProvider is `categoriesMap`
   const categoriesMap = useSelector(selectCategoriesMap)
